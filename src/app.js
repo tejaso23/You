@@ -29,3 +29,14 @@ app.use(cookieParser());
 
  
 
+//Routes imports
+
+import userRoute from "./routes/user.routes.js"
+
+
+
+//Routes declaration
+
+app.use("/api/v1/users",userRoute);
+//http://localhost:8000/api/v1/users
+
