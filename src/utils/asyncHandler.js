@@ -5,9 +5,9 @@ const asyncHandler = (requestHandler) => async (req, res, next) => {
 
   } catch (error) {
 
-    return res.status(err.code || 500).json({
+    return res.status(error.code || 500).json({
       success: false,
-      message: err.message,
+      message: error.message,
 
     });
   }
