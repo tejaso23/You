@@ -7,19 +7,17 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 
 const registerUser = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    message: "ok",
-  });
+ 
 
-  const { fullName, email, username, password } = req.body;
-  console.log(fullName, username, password, email);
+  const { fullname, email, username, password } = req.body;
+  console.log(fullname, username, password, email);
 
 
 
 
   //checking all the fields
   if (
-    [fullName, email, username, password].some((field) => {
+    [fullname, email, username, password].some((field) => {
       field?.trim() === "";
     })
   ) {
@@ -29,19 +27,24 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
   //if user exits
-  const exitedUSer = User.findOne({
+  const exitedUSer = await User.findOne({
     $or: [{ username }, { email }],
   });
 
   if (exitedUSer) {
-    throw ApiError(409, "User with email or email Already exists");
+    throw new ApiError(409, "User with email or email Already exists");
   }
 
 
 
   //images handling
   const avatarlocalPath = req.files?.avatar[0]?.path;
-  const coverImagelocalPath = req.files?.coverImage[0]?.path;
+  //const coverImagelocalPath = req.files?.coverImage[0]?.path;
+
+  let coverImagelocalPath ;
+  if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.lenght > 0){
+           coverImagelocalPath = req.files.coverImage[0].path;
+  }
 
   if (!avatarlocalPath) {
     throw new ApiError(404, "Avatar file Required");
@@ -49,6 +52,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const avatar = await uploadOnClodinary(avatarlocalPath);
   const coverImage = await uploadOnClodinary(coverImagelocalPath);
+
+ 
 
   if (!avatar) {
     throw new ApiError(404, "Avatar file is required");
@@ -58,7 +63,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //making object and creating entry in database
   const user = await User.create({
-    fullName,
+    fullname,
     avatar: avatar.url,
     coverImage: coverImage?.url || "",
     username: username.toLowerCase(),
@@ -74,9 +79,12 @@ const registerUser = asyncHandler(async (req, res) => {
   if(!createdUSer){
     throw new ApiError(500,"Someting went wrong while registering a user ");
   }
+   ////console.log(req.body);
+   //console.log(req.files);
+   
 
     return res.status(201).json(
-      new ApiResponse(200,createdUSer,"User registered Successfully")
+       new ApiResponse(200,createdUSer,"User registered Successfully")
     )
 
 
